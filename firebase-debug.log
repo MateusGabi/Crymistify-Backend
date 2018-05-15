@@ -1,0 +1,112 @@
+[debug] [2018-05-15T16:48:48.027Z] ----------------------------------------------------------------------
+[debug] [2018-05-15T16:48:48.029Z] Command:       /usr/bin/node /usr/bin/firebase serve
+[debug] [2018-05-15T16:48:48.029Z] CLI Version:   3.18.4
+[debug] [2018-05-15T16:48:48.030Z] Platform:      linux
+[debug] [2018-05-15T16:48:48.030Z] Node Version:  v8.11.1
+[debug] [2018-05-15T16:48:48.030Z] Time:          Tue May 15 2018 12:48:48 GMT-0400 (-04)
+[debug] [2018-05-15T16:48:48.030Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-05-15T16:48:48.039Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-05-15T16:48:48.039Z] > authorizing via signed-in user
+[debug] [2018-05-15T16:48:48.041Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2018-05-15T16:48:48.041Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ { refresh_token: '1/oitbkXhXzfi0lOM3TALRhYwADLt71HV-0LxJiAb04vw',
+  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
+  grant_type: 'refresh_token',
+  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
+ Tue May 15 2018 12:48:48 GMT-0400 (-04)
+[debug] [2018-05-15T16:48:49.385Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-15T16:48:49.394Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/todo-app-b2a7b  
+  
+ Tue May 15 2018 12:48:49 GMT-0400 (-04)
+[debug] [2018-05-15T16:48:51.018Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-15T16:48:51.020Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/todo-app-b2a7b/tokens  
+  
+ Tue May 15 2018 12:48:51 GMT-0400 (-04)
+[debug] [2018-05-15T16:48:52.451Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-15T16:48:52.454Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/todo-app-b2a7b  
+  
+ Tue May 15 2018 12:48:52 GMT-0400 (-04)
+[debug] [2018-05-15T16:48:54.088Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from '/home/mateus/Documentos/Projetos/Crymistify-Backend'...
+[info] 
+[debug] [2018-05-15T16:48:55.943Z] Error: EACCES: permission denied, mkdir '/usr/lib/node_modules/firebase-tools/node_modules/@google-cloud/functions-emulator/logs'
+    at Object.fs.mkdirSync (fs.js:885:18)
+    at Object.assertLogsPath (/usr/lib/node_modules/firebase-tools/node_modules/@google-cloud/functions-emulator/src/emulator/logs.js:65:10)
+    at new Controller (/usr/lib/node_modules/firebase-tools/node_modules/@google-cloud/functions-emulator/src/cli/controller.js:77:32)
+    at FunctionsEmulator.start (/usr/lib/node_modules/firebase-tools/lib/functionsEmulator.js:111:21)
+    at Object.start (/usr/lib/node_modules/firebase-tools/lib/serve/functions.js:9:29)
+    at /usr/lib/node_modules/firebase-tools/lib/serve/index.js:17:21
+    at arrayMap (/usr/lib/node_modules/firebase-tools/node_modules/lodash/lodash.js:639:23)
+    at Function.map (/usr/lib/node_modules/firebase-tools/node_modules/lodash/lodash.js:9554:14)
+    at _serve (/usr/lib/node_modules/firebase-tools/lib/serve/index.js:15:7)
+    at Command._action (/usr/lib/node_modules/firebase-tools/commands/serve.js:48:12)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2018-05-15T16:51:50.634Z] ----------------------------------------------------------------------
+[debug] [2018-05-15T16:51:50.636Z] Command:       /usr/bin/node /usr/bin/firebase serve
+[debug] [2018-05-15T16:51:50.636Z] CLI Version:   3.18.4
+[debug] [2018-05-15T16:51:50.636Z] Platform:      linux
+[debug] [2018-05-15T16:51:50.636Z] Node Version:  v8.11.1
+[debug] [2018-05-15T16:51:50.637Z] Time:          Tue May 15 2018 12:51:50 GMT-0400 (-04)
+[debug] [2018-05-15T16:51:50.637Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-05-15T16:51:50.644Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-05-15T16:51:50.644Z] > authorizing via signed-in user
+[debug] [2018-05-15T16:51:50.646Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/todo-app-b2a7b  
+  
+ Tue May 15 2018 12:51:50 GMT-0400 (-04)
+[debug] [2018-05-15T16:51:52.400Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-15T16:51:52.403Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/todo-app-b2a7b/tokens  
+  
+ Tue May 15 2018 12:51:52 GMT-0400 (-04)
+[debug] [2018-05-15T16:51:54.312Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-15T16:51:54.316Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/todo-app-b2a7b  
+  
+ Tue May 15 2018 12:51:54 GMT-0400 (-04)
+[debug] [2018-05-15T16:51:55.951Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from '/home/mateus/Documentos/Projetos/Crymistify-Backend'...
+[info] 
+[debug] [2018-05-15T16:51:57.278Z] Error: EACCES: permission denied, mkdir '/usr/lib/node_modules/firebase-tools/node_modules/@google-cloud/functions-emulator/logs'
+    at Object.fs.mkdirSync (fs.js:885:18)
+    at Object.assertLogsPath (/usr/lib/node_modules/firebase-tools/node_modules/@google-cloud/functions-emulator/src/emulator/logs.js:65:10)
+    at new Controller (/usr/lib/node_modules/firebase-tools/node_modules/@google-cloud/functions-emulator/src/cli/controller.js:77:32)
+    at FunctionsEmulator.start (/usr/lib/node_modules/firebase-tools/lib/functionsEmulator.js:111:21)
+    at Object.start (/usr/lib/node_modules/firebase-tools/lib/serve/functions.js:9:29)
+    at /usr/lib/node_modules/firebase-tools/lib/serve/index.js:17:21
+    at arrayMap (/usr/lib/node_modules/firebase-tools/node_modules/lodash/lodash.js:639:23)
+    at Function.map (/usr/lib/node_modules/firebase-tools/node_modules/lodash/lodash.js:9554:14)
+    at _serve (/usr/lib/node_modules/firebase-tools/lib/serve/index.js:15:7)
+    at Command._action (/usr/lib/node_modules/firebase-tools/commands/serve.js:48:12)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2018-05-15T16:52:24.050Z] ----------------------------------------------------------------------
+[debug] [2018-05-15T16:52:24.053Z] Command:       /usr/bin/node /usr/bin/firebase serve --only functions
+[debug] [2018-05-15T16:52:24.053Z] CLI Version:   3.18.4
+[debug] [2018-05-15T16:52:24.053Z] Platform:      linux
+[debug] [2018-05-15T16:52:24.053Z] Node Version:  v8.11.1
+[debug] [2018-05-15T16:52:24.053Z] Time:          Tue May 15 2018 12:52:24 GMT-0400 (-04)
+[debug] [2018-05-15T16:52:24.053Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-05-15T16:52:24.061Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-05-15T16:52:24.061Z] > authorizing via signed-in user
+[debug] [2018-05-15T16:52:24.063Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/todo-app-b2a7b  
+  
+ Tue May 15 2018 12:52:24 GMT-0400 (-04)
+[debug] [2018-05-15T16:52:25.411Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-15T16:52:25.413Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/todo-app-b2a7b/tokens  
+  
+ Tue May 15 2018 12:52:25 GMT-0400 (-04)
+[debug] [2018-05-15T16:52:27.558Z] <<< HTTP RESPONSE 200
+[debug] [2018-05-15T16:52:27.562Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/todo-app-b2a7b  
+  
+ Tue May 15 2018 12:52:27 GMT-0400 (-04)
+[debug] [2018-05-15T16:54:38.768Z] Error: connect ETIMEDOUT 216.58.202.106:443
+    at Object._errnoException (util.js:1022:11)
+    at _exceptionWithHostPort (util.js:1044:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1198:14)
+[error] 
+[error] Error: Server Error. connect ETIMEDOUT 216.58.202.106:443
