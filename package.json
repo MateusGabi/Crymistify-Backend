@@ -1,0 +1,19 @@
+{
+  "name": "crymistify-backend",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MateusGabi/Crymistify-Backend.git"
+  },
+  "author": "Mateus Gabi Moreira, Renan Benatti Dias",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MateusGabi/Crymistify-Backend/issues"
+  },
+  "homepage": "https://github.com/MateusGabi/Crymistify-Backend#readme"
+}
