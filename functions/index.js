@@ -1,56 +1,88 @@
-const functions = require('firebase-functions');
+'use strict';
 
-// The Firebase Admin SDK to access the Firebase Realtime Database.
+const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+
 admin.initializeApp();
 
-const DATABASE = admin.database().ref();
+exports.addMessage = functions.https.onRequest((req, res) => {
 
+    const original = req.query.text;
 
-// Create and Deploy Your First Cloud Functions
-// https://firebase.google.com/docs/functions/write-firebase-functions
+    return admin.database().ref('/messages').push({ original: original }).then((snapshot) => {
+        // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
+        return res.redirect(303, snapshot.ref.toString());
+    });
 
-/**
- * Get all todos from an authenticated user
- */
-const todos = functions.https.onCall((data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated')
-    }
-
-    return getTodosByUID(context.auth.uid)
 });
 
-const getTodosByUID = uid => {
-    return new Promise((res, rej) => {
+// Listens for new messages added to /messages/:pushId/original and creates an
+// uppercase version of the message to /messages/:pushId/uppercase
+exports.makeUppercase = functions.database.ref('/messages/{pushId}/original')
+    .onCreate((snapshot, context) => {
 
-        if(!uid) {
-            // eslint-disable-next-line prefer-promise-reject-errors
-            rej({ error: 'unauthenticated'})
-            return;
-        }
+        // Grab the current value of what was written to the Realtime Database.
+        const original = snapshot.val();
 
-        
-        DATABASE.child('privateTodos')
-        .orderByChild('user')
-        .equalTo(user_id)
-        .on('value', dataSnapshot => {
-            const tasks = []
+        console.log('Uppercasing', context.params.pushId, original);
+        const uppercase = original.toUpperCase();
 
-            dataSnapshot.forEach(child => {
-                tasks.push({
-                    titulo: child.val().titulo,
-                        created_at: child.val().created_at,
-                        descricao: child.val().descricao,
-                        until_at: child.val().until_at,
-                        done: child.val().done,
-                        _key: child.key,
-                    });
-                });
+        // You must return a Promise when performing asynchronous tasks inside a Functions such as
+        // writing to the Firebase Realtime Database.
+        // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
+        return snapshot.ref.parent.child('uppercase').set(uppercase);
+    });
 
-            res(tasks)
-            });
+exports.todos = functions.https.onRequest((req, res) => {
+    // eslint-disable-next-line promise/always-return
+    return admin.database().ref('/privateTodos').once("value").then(snapshot => {
+        res.json(snapshot.val())
     })
-}
+})
 
-module.exports = { todos }
+exports.all = functions.https.onRequest((req, res) => {
+
+    if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer '))) {
+        console.error('No Firebase ID token was passed as a Bearer token in the Authorization header.',
+            'Make sure you authorize your request by providing the following HTTP header:',
+            'Authorization: Bearer <Firebase ID Token>',
+            'or by passing a "__session" cookie.');
+        res.status(403).send('Unauthorized');
+        return;
+    }
+
+    let idToken;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        console.log('Found "Authorization" header');
+
+        // Read the ID Token from the Authorization header.
+        idToken = req.headers.authorization.split('Bearer ')[1];
+    } else {
+        res.status(403).send('Unauthorized');
+        return;
+    }
+
+    // eslint-disable-next-line promise/always-return
+    return admin.auth().verifyIdToken(idToken).then((decodedIdToken) => {
+
+        console.log('ID Token correctly decoded', decodedIdToken);
+
+        // admin.database().ref('/privateTodos').once("value").then(snapshot => {
+        //     res.json(snapshot.val())
+        // })
+
+    }).catch((error) => {
+        console.error('Error while verifying Firebase ID token:', error);
+        res.status(403).send('Unauthorized');
+        return;
+    });
+})
+
+exports.me = functions.https.onRequest((req, res) => {
+    const tokenId = req.get('Authorization').split('Bearer ')[1];
+
+    return admin.auth().verifyIdToken(tokenId)
+        .then((decoded) => res.status(200).send(decoded))
+        .catch((err) => res.status(401).send(err));
+});
