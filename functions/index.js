@@ -34,49 +34,111 @@ exports.makeUppercase = functions.database.ref('/messages/{pushId}/original')
     });
 
 exports.todos = functions.https.onRequest((req, res) => {
-    // eslint-disable-next-line promise/always-return
-    return admin.database().ref('/privateTodos').once("value").then(snapshot => {
-        res.json(snapshot.val())
-    })
+
+
+    const tokenId = req.get('Authorization').split('Bearer ')[1];
+
+    return admin.auth().verifyIdToken(tokenId)
+        // eslint-disable-next-line promise/always-return
+        .then((decoded) => {
+            // res.status(200).send(decoded)
+            const uid = decoded.uid
+
+            admin.database()
+                .ref(`/users/${uid}/todos`)
+                .orderByChild("done")
+                .equalTo(false)
+                .once("value")
+                // eslint-disable-next-line promise/always-return
+                .then(dataSnapshot => {
+                    var tasks = [];
+                    dataSnapshot.forEach(child => {
+                        tasks.push({
+                            title: child.val().title,
+                            created_at: child.val().created_at,
+                            description: child.val().description,
+                            expire_in: child.val().expire_in,
+                            done: child.val().done,
+                            _key: child.key,
+                        });
+                    });
+                    res.json(tasks)
+                })
+                .catch((err) => res.status(501).send(err));
+        })
+        .catch((err) => res.status(401).send(err));
+
+
+})
+
+exports.dones = functions.https.onRequest((req, res) => {
+
+    const tokenId = req.get('Authorization').split('Bearer ')[1];
+
+    return admin.auth().verifyIdToken(tokenId)
+        // eslint-disable-next-line promise/always-return
+        .then((decoded) => {
+            // res.status(200).send(decoded)
+            const uid = decoded.uid
+
+            admin.database()
+                .ref(`/users/${uid}/todos`)
+                .orderByChild("done")
+                .equalTo(true)
+                .once("value")
+                // eslint-disable-next-line promise/always-return
+                .then(dataSnapshot => {
+                    var tasks = [];
+                    dataSnapshot.forEach(child => {
+                        tasks.push({
+                            title: child.val().title,
+                            created_at: child.val().created_at,
+                            description: child.val().description,
+                            expire_in: child.val().expire_in,
+                            done: child.val().done,
+                            _key: child.key,
+                        });
+                    });
+                    res.json(tasks)
+                })
+                .catch((err) => res.status(501).send(err));
+        })
+        .catch((err) => res.status(401).send(err));
+
 })
 
 exports.all = functions.https.onRequest((req, res) => {
 
-    if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer '))) {
-        console.error('No Firebase ID token was passed as a Bearer token in the Authorization header.',
-            'Make sure you authorize your request by providing the following HTTP header:',
-            'Authorization: Bearer <Firebase ID Token>',
-            'or by passing a "__session" cookie.');
-        res.status(403).send('Unauthorized');
-        return;
-    }
+    const tokenId = req.get('Authorization').split('Bearer ')[1];
 
-    let idToken;
+    return admin.auth().verifyIdToken(tokenId)
+        // eslint-disable-next-line promise/always-return
+        .then((decoded) => {
+            // res.status(200).send(decoded)
+            const uid = decoded.uid
 
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-        console.log('Found "Authorization" header');
+            admin.database()
+                .ref(`/users/${uid}/todos`)
+                .once("value")
+                // eslint-disable-next-line promise/always-return
+                .then(dataSnapshot => {
+                    var tasks = [];
+                    dataSnapshot.forEach(child => {
+                        tasks.push({
+                            title: child.val().title,
+                            created_at: child.val().created_at,
+                            description: child.val().description,
+                            expire_in: child.val().expire_in,
+                            done: child.val().done,
+                            _key: child.key,
+                        });
+                    });
+                    res.json(tasks)
+                })
+                .catch((err) => res.status(501).send(err));
+        })
+        .catch((err) => res.status(401).send(err));
 
-        // Read the ID Token from the Authorization header.
-        idToken = req.headers.authorization.split('Bearer ')[1];
-    } else {
-        res.status(403).send('Unauthorized');
-        return;
-    }
-
-    // eslint-disable-next-line promise/always-return
-    return admin.auth().verifyIdToken(idToken).then((decodedIdToken) => {
-
-        console.log('ID Token correctly decoded', decodedIdToken);
-
-        // admin.database().ref('/privateTodos').once("value").then(snapshot => {
-        //     res.json(snapshot.val())
-        // })
-
-    }).catch((error) => {
-        console.error('Error while verifying Firebase ID token:', error);
-        res.status(403).send('Unauthorized');
-        return;
-    });
 })
 
 exports.me = functions.https.onRequest((req, res) => {
