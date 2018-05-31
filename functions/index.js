@@ -119,6 +119,7 @@ exports.all = functions.https.onRequest((req, res) => {
 
             admin.database()
                 .ref(`/users/${uid}/todos`)
+                .orderByChild("expire_in")
                 .once("value")
                 // eslint-disable-next-line promise/always-return
                 .then(dataSnapshot => {
