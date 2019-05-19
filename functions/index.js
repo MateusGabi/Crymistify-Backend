@@ -106,6 +106,52 @@ exports.makeUppercase = functions.database.ref('/messages/{pushId}/original')
         return snapshot.ref.parent.child('uppercase').set(uppercase);
     });
 
+exports.finishTodo = functions.https.onRequest((req, res) => {
+
+    if (req.method !== 'POST') {
+        return res.status(500).json({
+            message: 'Not allowed'
+        })
+    }
+
+    console.log('Request Body', req.body)
+    console.log('Request Header', req.body)
+
+    const tokenId = req.get('Authorization').split('Bearer ')[1];
+
+    return admin.auth().verifyIdToken(tokenId).then(decoded => {
+
+        const { uid } = decoded;
+        const { _key = null } = req.body
+
+        if (!_key) {
+            return res.status(406).json({
+                message: 'Please, send prop _key on body.'
+            })
+        }
+
+        const todoRef = admin.database().ref(`/users/${uid}/todos/${_key}`);
+
+        return todoRef.child('done').set(true, error => {
+            if (error) {
+                console.error('Set Error', error)
+                return res.status(501).json({ error })
+            } else {
+                console.log('Save!', _key)
+                return res.status(200).json({
+                    reference: _key
+                });
+            }
+        })
+
+
+    }).catch(error => {
+        console.error('Error', error)
+        return res.status(501).json({ error })
+    })
+
+})
+
 exports.todos = functions.https.onRequest((req, res) => {
 
     const tokenId = req.get('Authorization').split('Bearer ')[1];
@@ -134,6 +180,19 @@ exports.todos = functions.https.onRequest((req, res) => {
                             _key: child.key,
                         });
                     });
+
+                    tasks = tasks.sort((a, b) => {
+
+                        if(!a.expire_in && !b.expire_in) return 0
+                        if(!a.expire_in) return -1
+                        if(!b.expire_in) return 1
+
+                        const momentA = moment(a.expire_in);
+                        const momentB = moment(b.expire_in);
+
+                        return momentA.diff(momentB)
+                    })
+
                     res.json(tasks)
                 })
                 .catch((err) => res.status(501).send(err));
