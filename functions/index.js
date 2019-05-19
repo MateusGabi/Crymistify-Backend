@@ -2,6 +2,7 @@
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const moment = require('moment');
 
 admin.initializeApp();
 
@@ -32,21 +33,20 @@ exports.addTodo = functions.https.onRequest((req, res) => {
         console.log('User decoded', decoded)
 
         const { uid } = decoded;
-        // const { title, description, until_at } = JSON.parse(req.body)
+        const { title = null, description = null, expire_in = null } = req.body
 
         const newTodo = {
-            title: 'foo',
-            description: 'bar',
-            until_at: 'ontem',
+            title,
+            description,
+            expire_in,
             done: false,
-            _key: new Date()
         }
 
         console.log('Todo', newTodo)
-        const todoRef = admin.database().ref(`/users/${uid}/todos/foo`);
+        const todoRef = admin.database().ref(`/users/${uid}/todos`);
 
         return todoRef.push(newTodo).then(snapshot => {
-            console.log('Save!', snapshot)
+            console.log('Save!', snapshot.ref.toString())
             return res.status(200).json({
                 reference: snapshot.ref.toString()
             });
@@ -60,6 +60,34 @@ exports.addTodo = functions.https.onRequest((req, res) => {
     })
         
 })
+
+exports.addOnCreateVariableInTodo = functions.database.ref('/users/{uid}/todos/{pushId}')
+    .onCreate((snapshot, context) => {
+
+        // Grab the current value of what was written to the Realtime Database.
+        const original = snapshot.val();
+
+        console.log('Adding created_at', context.params.pushId, original);
+
+        // You must return a Promise when performing asynchronous tasks inside a Functions such as
+        // writing to the Firebase Realtime Database.
+        // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
+        return snapshot.ref.child('created_at').set(moment().format());
+    });
+
+exports.addOnUpdateVariableInTodo = functions.database.ref('/users/{uid}/todos/{pushId}')
+    .onUpdate((snapshot, context) => {
+
+        // Grab the current value of what was written to the Realtime Database.
+        const original = snapshot.after.val();
+
+        console.log('Adding updated_at', context.params.pushId, original);
+
+        // You must return a Promise when performing asynchronous tasks inside a Functions such as
+        // writing to the Firebase Realtime Database.
+        // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
+        return snapshot.after.ref.child('updated_at').set(moment().format());
+    });
 
 // Listens for new messages added to /messages/:pushId/original and creates an
 // uppercase version of the message to /messages/:pushId/uppercase
