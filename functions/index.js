@@ -16,6 +16,51 @@ exports.addMessage = functions.https.onRequest((req, res) => {
 
 });
 
+exports.addTodo = functions.https.onRequest((req, res) => {
+
+    if (req.method !== 'POST') {
+        return res.status(500).json({
+            message: 'Not allowed'
+        })
+    }
+
+    console.log('Request Body', req.body)
+    console.log('Request Header', req.body)
+    const tokenId = req.get('Authorization').split('Bearer ')[1];
+
+    return admin.auth().verifyIdToken(tokenId).then(decoded => {
+        console.log('User decoded', decoded)
+
+        const { uid } = decoded;
+        // const { title, description, until_at } = JSON.parse(req.body)
+
+        const newTodo = {
+            title: 'foo',
+            description: 'bar',
+            until_at: 'ontem',
+            done: false,
+            _key: new Date()
+        }
+
+        console.log('Todo', newTodo)
+        const todoRef = admin.database().ref(`/users/${uid}/todos/foo`);
+
+        return todoRef.push(newTodo).then(snapshot => {
+            console.log('Save!', snapshot)
+            return res.status(200).json({
+                reference: snapshot.ref.toString()
+            });
+        }).catch(error => {
+            console.error('Error to Save', error)
+        })
+
+    }).catch(error => {
+        console.error('Error', error)
+        res.status(501).json({ error })
+    })
+        
+})
+
 // Listens for new messages added to /messages/:pushId/original and creates an
 // uppercase version of the message to /messages/:pushId/uppercase
 exports.makeUppercase = functions.database.ref('/messages/{pushId}/original')
@@ -34,7 +79,6 @@ exports.makeUppercase = functions.database.ref('/messages/{pushId}/original')
     });
 
 exports.todos = functions.https.onRequest((req, res) => {
-
 
     const tokenId = req.get('Authorization').split('Bearer ')[1];
 

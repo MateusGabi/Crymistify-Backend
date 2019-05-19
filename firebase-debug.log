@@ -1,0 +1,35 @@
+[debug] [2019-05-19T02:27:30.361Z] ----------------------------------------------------------------------
+[debug] [2019-05-19T02:27:30.363Z] Command:       /usr/local/lib/nodejs/node-v10.14.2/bin/node /home/mgm/.npm-global/bin/firebase serve
+[debug] [2019-05-19T02:27:30.364Z] CLI Version:   6.10.0
+[debug] [2019-05-19T02:27:30.364Z] Platform:      linux
+[debug] [2019-05-19T02:27:30.364Z] Node Version:  v10.14.2
+[debug] [2019-05-19T02:27:30.364Z] Time:          Sat May 18 2019 23:27:30 GMT-0300 (GMT-03:00)
+[debug] [2019-05-19T02:27:30.364Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2019-05-19T02:27:30.370Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2019-05-19T02:27:30.371Z] > authorizing via signed-in user
+[debug] [2019-05-19T02:27:30.371Z] [iam] checking project todo-app-b2a7b for permissions ["firebase.projects.get"]
+[debug] [2019-05-19T02:27:30.372Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2019-05-19T02:27:30.372Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+ <request body omitted>
+[debug] [2019-05-19T02:27:30.641Z] <<< HTTP RESPONSE 200
+[debug] [2019-05-19T02:27:30.651Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/todo-app-b2a7b:testIamPermissions  
+
+[debug] [2019-05-19T02:27:31.728Z] <<< HTTP RESPONSE 200
+[debug] [2019-05-19T02:27:31.732Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/todo-app-b2a7b  
+ 
+[debug] [2019-05-19T02:27:32.671Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from '/home/mgm/dev/Crymistify-Backend'...
+[info] 
+[warn] ⚠  Your functions directory does not specify a Node version.
+   - Learn more at https://firebase.google.com/docs/functions/manage-functions#set_runtime_options
+[debug] [2019-05-19T02:27:32.682Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/551448276957:getServerAppConfig  
+ 
+[debug] [2019-05-19T02:27:33.164Z] <<< HTTP RESPONSE 200
+[info] ✔  functions: Emulator started at http://localhost:5000
+[info] i  functions: Watching "/home/mgm/dev/Crymistify-Backend/functions" for Cloud Functions...
+[debug] [2019-05-19T02:27:33.422Z] Functions runtime initialized.
+[debug] [2019-05-19T02:27:33.423Z] Disabled runtime features: {"functions_config_helper":true,"network_filtering":true,"timeout":true,"memory_limiting":true,"protect_env":true,"admin_stubs":true}
+[warn] ⚠  The Cloud Functions emulator requires the module "firebase-functions-test" to be installed as a development dependency. To fix this, run "npm install --save-dev firebase-functions-test" in your functions directory.
+[info] i  functions: Your functions could not be parsed due to an issue with your node_modules (see above)
