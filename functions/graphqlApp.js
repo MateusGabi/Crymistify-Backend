@@ -1,9 +1,10 @@
 const express = require("express");
 const admin = require("firebase-admin");
 const { ApolloServer } = require("apollo-server-express");
+const { importSchema } = require("graphql-import");
 
-const schema = require("./schema");
-const getTodos = require("./resolvers/todos");
+const schema = importSchema("./schema.graphql");
+const { getTodos, addTodo } = require("./resolvers/todos");
 const getMe = require("./resolvers/me");
 
 function gqlServer() {
@@ -13,6 +14,9 @@ function gqlServer() {
 
   const apolloServer = new ApolloServer({
     typeDefs: schema,
+    engine: {
+      apiKey: "service:MateusGabi-1732:80r5SHk0dQzFXkeQWHcwvA"
+    },
     context: function({ req }) {
       // get the user token from the headers
       const token = req.headers.authorization || "";
@@ -38,6 +42,9 @@ function gqlServer() {
       Query: {
         todos: getTodos,
         me: getMe
+      },
+      Mutation: {
+        addTodo
       }
     },
     // Enable graphiql gui

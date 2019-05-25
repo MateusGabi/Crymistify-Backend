@@ -1,5 +1,18 @@
 const moment = require("moment");
 
+function snapshotToArray(snapshot) {
+  var returnArr = [];
+
+  snapshot.forEach(function(childSnapshot) {
+    var item = childSnapshot.val();
+    item.key = childSnapshot.key;
+
+    returnArr.push(item);
+  });
+
+  return returnArr;
+}
+
 function sortByExpireInASC(a, b) {
   if (!a.expireIn && !b.expireIn) return 0;
   if (!a.expireIn) return -1;
@@ -11,37 +24,86 @@ function sortByExpireInASC(a, b) {
   return momentA.diff(momentB);
 }
 
-function graphqlResolver(obj, args, context, info) {
+function mapDBtoGraphQL(child) {
+  return {
+    ID: child.key,
+    createdAt: child.val().created_at,
+    updatedAt: child.val().updated_at,
+    expireIn: child.val().expire_in,
+    title: child.val().title,
+    description: child.val().description,
+    done: child.val().done,
+    late: moment(child.val().expire_in).isBefore(moment()),
+    tags: []
+  };
+}
+
+function getTodos(obj, args, context, info) {
   const { user, db } = context;
 
   return db
     .ref(`/users/${user.user_id}/todos`)
-    .orderByChild("done")
-    .equalTo(false)
+    .orderByChild("expire_in")
     .once("value")
     .then(dataSnapshot => {
-      let tasks = [];
-      dataSnapshot.forEach(child => {
-        tasks.push({
-          ID: child.key,
-          createdAt: child.val().created_at,
-          updatedAt: child.val().updated_at,
-          expireIn: child.val().expire_in,
-          title: child.val().title,
-          description: child.val().description,
-          done: child.val().done,
-          late: moment(child.val().expire_in).isBefore(moment()),
-          tags: []
-        });
-      });
+      let tasks = snapshotToArray(dataSnapshot)
+        .map(task => {
+          return {
+            ID: task.key,
+            createdAt: task.created_at,
+            updatedAt: task.updated_at,
+            expireIn: task.expire_in,
+            title: task.title,
+            description: task.description,
+            done: task.done,
+            late: moment(task.expire_in).isBefore(moment()),
+            tags: []
+          };
+        })
+        .sort(sortByExpireInASC);
 
-      tasks = tasks.sort(sortByExpireInASC);
-
+      console.log("Tasks", tasks);
       return tasks;
-    })
-    .catch(err => {
-      throw err;
     });
 }
 
-module.exports = graphqlResolver;
+function addTodo(obj, args, context, info) {
+  const { user, db } = context;
+
+  const {
+    title = null,
+    description = null,
+    expireIn = null,
+    tags = null
+  } = args;
+
+  const newTodo = {
+    title,
+    description,
+    expire_in: expireIn,
+    done: false
+  };
+
+  console.log("Todo", newTodo);
+  const todoRef = db.ref(`/users/${user.user_id}/todos`);
+
+  return todoRef
+    .push(newTodo)
+    .then(snap => {
+      return {
+        ID: snap.key,
+        title,
+        description,
+        expireIn,
+        done: false,
+        createdAt: moment().format(),
+        updatedAt: moment().format()
+      };
+    })
+    .catch(error => {
+      console.error("Error to Save", error);
+      throw error;
+    });
+}
+
+module.exports = { getTodos, addTodo };
