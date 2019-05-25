@@ -1,282 +1,300 @@
-'use strict';
+const { https } = require("firebase-functions");
+const gqlServer = require("./graphqlApp");
 
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const moment = require('moment');
+const server = gqlServer();
 
-admin.initializeApp();
+// Graphql api
+// https://us-central1-<project-name>.cloudfunctions.net/api/
+const graphql = https.onRequest(server);
 
-exports.addMessage = functions.https.onRequest((req, res) => {
+module.exports = { graphql };
 
-    const original = req.query.text;
+// exports.addMessage = functions.https.onRequest((req, res) => {
+//   const original = req.query.text;
 
-    return admin.database().ref('/messages').push({ original: original }).then((snapshot) => {
-        // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
-        return res.redirect(303, snapshot.ref.toString());
-    });
+//   return admin
+//     .database()
+//     .ref("/messages")
+//     .push({ original: original })
+//     .then(snapshot => {
+//       // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
+//       return res.redirect(303, snapshot.ref.toString());
+//     });
+// });
 
-});
+// exports.addTodo = functions.https.onRequest((req, res) => {
+//   if (req.method !== "POST") {
+//     return res.status(500).json({
+//       message: "Not allowed"
+//     });
+//   }
 
-exports.addTodo = functions.https.onRequest((req, res) => {
+//   console.log("Request Body", req.body);
+//   console.log("Request Header", req.body);
+//   const tokenId = req.get("Authorization").split("Bearer ")[1];
 
-    if (req.method !== 'POST') {
-        return res.status(500).json({
-            message: 'Not allowed'
-        })
-    }
+//   return admin
+//     .auth()
+//     .verifyIdToken(tokenId)
+//     .then(decoded => {
+//       console.log("User decoded", decoded);
 
-    console.log('Request Body', req.body)
-    console.log('Request Header', req.body)
-    const tokenId = req.get('Authorization').split('Bearer ')[1];
+//       const { uid } = decoded;
+//       const { title = null, description = null, expire_in = null } = req.body;
 
-    return admin.auth().verifyIdToken(tokenId).then(decoded => {
-        console.log('User decoded', decoded)
+//       const newTodo = {
+//         title,
+//         description,
+//         expire_in,
+//         done: false
+//       };
 
-        const { uid } = decoded;
-        const { title = null, description = null, expire_in = null } = req.body
+//       console.log("Todo", newTodo);
+//       const todoRef = admin.database().ref(`/users/${uid}/todos`);
 
-        const newTodo = {
-            title,
-            description,
-            expire_in,
-            done: false,
-        }
+//       return todoRef
+//         .push(newTodo)
+//         .then(snapshot => {
+//           console.log("Save!", snapshot.ref.toString());
+//           return res.status(200).json({
+//             reference: snapshot.ref.toString()
+//           });
+//         })
+//         .catch(error => {
+//           console.error("Error to Save", error);
+//         });
+//     })
+//     .catch(error => {
+//       console.error("Error", error);
+//       res.status(501).json({ error });
+//     });
+// });
 
-        console.log('Todo', newTodo)
-        const todoRef = admin.database().ref(`/users/${uid}/todos`);
+// exports.addOnCreateVariableInTodo = functions.database
+//   .ref("/users/{uid}/todos/{pushId}")
+//   .onCreate((snapshot, context) => {
+//     // Grab the current value of what was written to the Realtime Database.
+//     const original = snapshot.val();
 
-        return todoRef.push(newTodo).then(snapshot => {
-            console.log('Save!', snapshot.ref.toString())
-            return res.status(200).json({
-                reference: snapshot.ref.toString()
-            });
-        }).catch(error => {
-            console.error('Error to Save', error)
-        })
+//     console.log("Adding created_at", context.params.pushId, original);
 
-    }).catch(error => {
-        console.error('Error', error)
-        res.status(501).json({ error })
-    })
-        
-})
+//     // You must return a Promise when performing asynchronous tasks inside a Functions such as
+//     // writing to the Firebase Realtime Database.
+//     // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
+//     return snapshot.ref.child("created_at").set(moment().format());
+//   });
 
-exports.addOnCreateVariableInTodo = functions.database.ref('/users/{uid}/todos/{pushId}')
-    .onCreate((snapshot, context) => {
+// exports.addOnUpdateVariableInTodo = functions.database
+//   .ref("/users/{uid}/todos/{pushId}")
+//   .onUpdate((snapshot, context) => {
+//     // Grab the current value of what was written to the Realtime Database.
+//     const original = snapshot.after.val();
 
-        // Grab the current value of what was written to the Realtime Database.
-        const original = snapshot.val();
+//     console.log("Adding updated_at", context.params.pushId, original);
 
-        console.log('Adding created_at', context.params.pushId, original);
+//     // You must return a Promise when performing asynchronous tasks inside a Functions such as
+//     // writing to the Firebase Realtime Database.
+//     // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
+//     return snapshot.after.ref.child("updated_at").set(moment().format());
+//   });
 
-        // You must return a Promise when performing asynchronous tasks inside a Functions such as
-        // writing to the Firebase Realtime Database.
-        // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
-        return snapshot.ref.child('created_at').set(moment().format());
-    });
+// // Listens for new messages added to /messages/:pushId/original and creates an
+// // uppercase version of the message to /messages/:pushId/uppercase
+// exports.makeUppercase = functions.database
+//   .ref("/messages/{pushId}/original")
+//   .onCreate((snapshot, context) => {
+//     // Grab the current value of what was written to the Realtime Database.
+//     const original = snapshot.val();
 
-exports.addOnUpdateVariableInTodo = functions.database.ref('/users/{uid}/todos/{pushId}')
-    .onUpdate((snapshot, context) => {
+//     console.log("Uppercasing", context.params.pushId, original);
+//     const uppercase = original.toUpperCase();
 
-        // Grab the current value of what was written to the Realtime Database.
-        const original = snapshot.after.val();
+//     // You must return a Promise when performing asynchronous tasks inside a Functions such as
+//     // writing to the Firebase Realtime Database.
+//     // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
+//     return snapshot.ref.parent.child("uppercase").set(uppercase);
+//   });
 
-        console.log('Adding updated_at', context.params.pushId, original);
+// exports.finishTodo = functions.https.onRequest((req, res) => {
+//   if (req.method !== "POST") {
+//     return res.status(500).json({
+//       message: "Not allowed"
+//     });
+//   }
 
-        // You must return a Promise when performing asynchronous tasks inside a Functions such as
-        // writing to the Firebase Realtime Database.
-        // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
-        return snapshot.after.ref.child('updated_at').set(moment().format());
-    });
+//   console.log("Request Body", req.body);
+//   console.log("Request Header", req.body);
 
-// Listens for new messages added to /messages/:pushId/original and creates an
-// uppercase version of the message to /messages/:pushId/uppercase
-exports.makeUppercase = functions.database.ref('/messages/{pushId}/original')
-    .onCreate((snapshot, context) => {
+//   const tokenId = req.get("Authorization").split("Bearer ")[1];
 
-        // Grab the current value of what was written to the Realtime Database.
-        const original = snapshot.val();
+//   return admin
+//     .auth()
+//     .verifyIdToken(tokenId)
+//     .then(decoded => {
+//       const { uid } = decoded;
+//       const { _key = null } = req.body;
 
-        console.log('Uppercasing', context.params.pushId, original);
-        const uppercase = original.toUpperCase();
+//       if (!_key) {
+//         return res.status(406).json({
+//           message: "Please, send prop _key on body."
+//         });
+//       }
 
-        // You must return a Promise when performing asynchronous tasks inside a Functions such as
-        // writing to the Firebase Realtime Database.
-        // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
-        return snapshot.ref.parent.child('uppercase').set(uppercase);
-    });
+//       const todoRef = admin.database().ref(`/users/${uid}/todos/${_key}`);
 
-exports.finishTodo = functions.https.onRequest((req, res) => {
+//       return todoRef.child("done").set(true, error => {
+//         if (error) {
+//           console.error("Set Error", error);
+//           return res.status(501).json({ error });
+//         } else {
+//           console.log("Save!", _key);
+//           return res.status(200).json({
+//             reference: _key
+//           });
+//         }
+//       });
+//     })
+//     .catch(error => {
+//       console.error("Error", error);
+//       return res.status(501).json({ error });
+//     });
+// });
 
-    if (req.method !== 'POST') {
-        return res.status(500).json({
-            message: 'Not allowed'
-        })
-    }
+// exports.todos = functions.https.onRequest((req, res) => {
+//   const tokenId = req.get("Authorization").split("Bearer ")[1];
 
-    console.log('Request Body', req.body)
-    console.log('Request Header', req.body)
+//   return (
+//     admin
+//       .auth()
+//       .verifyIdToken(tokenId)
+//       // eslint-disable-next-line promise/always-return
+//       .then(decoded => {
+//         // res.status(200).send(decoded)
+//         const uid = decoded.uid;
 
-    const tokenId = req.get('Authorization').split('Bearer ')[1];
+//         admin
+//           .database()
+//           .ref(`/users/${uid}/todos`)
+//           .orderByChild("done")
+//           .equalTo(false)
+//           .once("value")
+//           // eslint-disable-next-line promise/always-return
+//           .then(dataSnapshot => {
+//             var tasks = [];
+//             dataSnapshot.forEach(child => {
+//               tasks.push({
+//                 title: child.val().title,
+//                 created_at: child.val().created_at,
+//                 description: child.val().description,
+//                 expire_in: child.val().expire_in,
+//                 late: moment(child.val().expire_in).isBefore(moment()),
+//                 done: child.val().done,
+//                 _key: child.key
+//               });
+//             });
 
-    return admin.auth().verifyIdToken(tokenId).then(decoded => {
+//             tasks = tasks.sort((a, b) => {
+//               if (!a.expire_in && !b.expire_in) return 0;
+//               if (!a.expire_in) return -1;
+//               if (!b.expire_in) return 1;
 
-        const { uid } = decoded;
-        const { _key = null } = req.body
+//               const momentA = moment(a.expire_in);
+//               const momentB = moment(b.expire_in);
 
-        if (!_key) {
-            return res.status(406).json({
-                message: 'Please, send prop _key on body.'
-            })
-        }
+//               return momentA.diff(momentB);
+//             });
 
-        const todoRef = admin.database().ref(`/users/${uid}/todos/${_key}`);
+//             res.json(tasks);
+//           })
+//           .catch(err => res.status(501).send(err));
+//       })
+//       .catch(err => res.status(401).send(err))
+//   );
+// });
 
-        return todoRef.child('done').set(true, error => {
-            if (error) {
-                console.error('Set Error', error)
-                return res.status(501).json({ error })
-            } else {
-                console.log('Save!', _key)
-                return res.status(200).json({
-                    reference: _key
-                });
-            }
-        })
+// exports.dones = functions.https.onRequest((req, res) => {
+//   const tokenId = req.get("Authorization").split("Bearer ")[1];
 
+//   return (
+//     admin
+//       .auth()
+//       .verifyIdToken(tokenId)
+//       // eslint-disable-next-line promise/always-return
+//       .then(decoded => {
+//         // res.status(200).send(decoded)
+//         const uid = decoded.uid;
 
-    }).catch(error => {
-        console.error('Error', error)
-        return res.status(501).json({ error })
-    })
+//         admin
+//           .database()
+//           .ref(`/users/${uid}/todos`)
+//           .orderByChild("done")
+//           .equalTo(true)
+//           .once("value")
+//           // eslint-disable-next-line promise/always-return
+//           .then(dataSnapshot => {
+//             var tasks = [];
+//             dataSnapshot.forEach(child => {
+//               tasks.push({
+//                 title: child.val().title,
+//                 created_at: child.val().created_at,
+//                 description: child.val().description,
+//                 expire_in: child.val().expire_in,
+//                 done: child.val().done,
+//                 _key: child.key
+//               });
+//             });
+//             res.json(tasks);
+//           })
+//           .catch(err => res.status(501).send(err));
+//       })
+//       .catch(err => res.status(401).send(err))
+//   );
+// });
 
-})
+// exports.all = functions.https.onRequest((req, res) => {
+//   const tokenId = req.get("Authorization").split("Bearer ")[1];
 
-exports.todos = functions.https.onRequest((req, res) => {
+//   return (
+//     admin
+//       .auth()
+//       .verifyIdToken(tokenId)
+//       // eslint-disable-next-line promise/always-return
+//       .then(decoded => {
+//         // res.status(200).send(decoded)
+//         const uid = decoded.uid;
 
-    const tokenId = req.get('Authorization').split('Bearer ')[1];
+//         admin
+//           .database()
+//           .ref(`/users/${uid}/todos`)
+//           .orderByChild("expire_in")
+//           .once("value")
+//           // eslint-disable-next-line promise/always-return
+//           .then(dataSnapshot => {
+//             var tasks = [];
+//             dataSnapshot.forEach(child => {
+//               tasks.push({
+//                 title: child.val().title,
+//                 created_at: child.val().created_at,
+//                 description: child.val().description,
+//                 expire_in: child.val().expire_in,
+//                 done: child.val().done,
+//                 _key: child.key
+//               });
+//             });
+//             res.json(tasks);
+//           })
+//           .catch(err => res.status(501).send(err));
+//       })
+//       .catch(err => res.status(401).send(err))
+//   );
+// });
 
-    return admin.auth().verifyIdToken(tokenId)
-        // eslint-disable-next-line promise/always-return
-        .then((decoded) => {
-            // res.status(200).send(decoded)
-            const uid = decoded.uid
+// exports.me = functions.https.onRequest((req, res) => {
+//   const tokenId = req.get("Authorization").split("Bearer ")[1];
 
-            admin.database()
-                .ref(`/users/${uid}/todos`)
-                .orderByChild("done")
-                .equalTo(false)
-                .once("value")
-                // eslint-disable-next-line promise/always-return
-                .then(dataSnapshot => {
-                    var tasks = [];
-                    dataSnapshot.forEach(child => {
-                        tasks.push({
-                            title: child.val().title,
-                            created_at: child.val().created_at,
-                            description: child.val().description,
-                            expire_in: child.val().expire_in,
-                            done: child.val().done,
-                            _key: child.key,
-                        });
-                    });
-
-                    tasks = tasks.sort((a, b) => {
-
-                        if(!a.expire_in && !b.expire_in) return 0
-                        if(!a.expire_in) return -1
-                        if(!b.expire_in) return 1
-
-                        const momentA = moment(a.expire_in);
-                        const momentB = moment(b.expire_in);
-
-                        return momentA.diff(momentB)
-                    })
-
-                    res.json(tasks)
-                })
-                .catch((err) => res.status(501).send(err));
-        })
-        .catch((err) => res.status(401).send(err));
-
-
-})
-
-exports.dones = functions.https.onRequest((req, res) => {
-
-    const tokenId = req.get('Authorization').split('Bearer ')[1];
-
-    return admin.auth().verifyIdToken(tokenId)
-        // eslint-disable-next-line promise/always-return
-        .then((decoded) => {
-            // res.status(200).send(decoded)
-            const uid = decoded.uid
-
-            admin.database()
-                .ref(`/users/${uid}/todos`)
-                .orderByChild("done")
-                .equalTo(true)
-                .once("value")
-                // eslint-disable-next-line promise/always-return
-                .then(dataSnapshot => {
-                    var tasks = [];
-                    dataSnapshot.forEach(child => {
-                        tasks.push({
-                            title: child.val().title,
-                            created_at: child.val().created_at,
-                            description: child.val().description,
-                            expire_in: child.val().expire_in,
-                            done: child.val().done,
-                            _key: child.key,
-                        });
-                    });
-                    res.json(tasks)
-                })
-                .catch((err) => res.status(501).send(err));
-        })
-        .catch((err) => res.status(401).send(err));
-
-})
-
-exports.all = functions.https.onRequest((req, res) => {
-
-    const tokenId = req.get('Authorization').split('Bearer ')[1];
-
-    return admin.auth().verifyIdToken(tokenId)
-        // eslint-disable-next-line promise/always-return
-        .then((decoded) => {
-            // res.status(200).send(decoded)
-            const uid = decoded.uid
-
-            admin.database()
-                .ref(`/users/${uid}/todos`)
-                .orderByChild("expire_in")
-                .once("value")
-                // eslint-disable-next-line promise/always-return
-                .then(dataSnapshot => {
-                    var tasks = [];
-                    dataSnapshot.forEach(child => {
-                        tasks.push({
-                            title: child.val().title,
-                            created_at: child.val().created_at,
-                            description: child.val().description,
-                            expire_in: child.val().expire_in,
-                            done: child.val().done,
-                            _key: child.key,
-                        });
-                    });
-                    res.json(tasks)
-                })
-                .catch((err) => res.status(501).send(err));
-        })
-        .catch((err) => res.status(401).send(err));
-
-})
-
-exports.me = functions.https.onRequest((req, res) => {
-    const tokenId = req.get('Authorization').split('Bearer ')[1];
-
-    return admin.auth().verifyIdToken(tokenId)
-        .then((decoded) => res.status(200).send(decoded))
-        .catch((err) => res.status(401).send(err));
-});
+//   return admin
+//     .auth()
+//     .verifyIdToken(tokenId)
+//     .then(decoded => res.status(200).send(decoded))
+//     .catch(err => res.status(401).send(err));
+// });
