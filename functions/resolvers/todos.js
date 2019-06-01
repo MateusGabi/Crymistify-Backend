@@ -46,9 +46,33 @@ function genRandomId() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
+function createDatabaseReference(pathways, db) {
+  const path = '/' + pathways.join('/')
+
+  return db.ref(path)
+}
+
+function increasePoints(x, userId, payload, db) {
+  const ref = createDatabaseReference([
+    'users', userId, 'points'
+  ], db)
+
+  ref.once('value').then(snap => {
+    const old = snap.val() || 0
+    return ref.set(old + x)
+  }).then(() => {
+    const pointsTransactionsReference = createDatabaseReference([
+      'users', userId, 'points_transactions'
+    ], db)
+
+    return pointsTransactionsReference.push({ payload, value: x})
+
+  }).catch(err => console.error(err))
+}
+
 function addTags(tags, databaseRef) {
   tags.map(tag => ({
-    __id: slug,
+    __id: slugify(tag),
     title: tag,
     slug: slugify(tag),
     // TODO: move to functions
@@ -113,15 +137,21 @@ function addTodo(obj, args, context, info) {
     __via: "GraphQL"
   };
 
-  /* parallel */
-  addTags(tags || [], db.ref(`/users/${user.user_id}/tags`))
-
   console.log("Todo", newTodo);
   const todoRef = db.ref(`/users/${user.user_id}/todos`);
 
   return todoRef
     .push(newTodo)
     .then(snap => {
+
+      /* parallel */
+      addTags(tags || [], db.ref(`/users/${user.user_id}/tags`))
+      increasePoints(10, user.user_id, {
+        todo_id: snap.key,
+        type: 'ADD_TODO',
+        created_at: moment().format()
+      }, db)
+
       return {
         ID: snap.key,
         title,

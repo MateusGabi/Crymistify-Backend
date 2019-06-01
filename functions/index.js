@@ -1,4 +1,4 @@
-const { https } = require("firebase-functions");
+const { https, database } = require("firebase-functions");
 const gqlServer = require("./graphqlApp");
 
 const server = gqlServer();
@@ -6,21 +6,6 @@ const server = gqlServer();
 // Graphql api
 // https://us-central1-<project-name>.cloudfunctions.net/api/
 const graphql = https.onRequest(server);
-
-module.exports = { graphql };
-
-// exports.addMessage = functions.https.onRequest((req, res) => {
-//   const original = req.query.text;
-
-//   return admin
-//     .database()
-//     .ref("/messages")
-//     .push({ original: original })
-//     .then(snapshot => {
-//       // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
-//       return res.redirect(303, snapshot.ref.toString());
-//     });
-// });
 
 // exports.addTodo = functions.https.onRequest((req, res) => {
 //   if (req.method !== "POST") {
@@ -70,33 +55,33 @@ module.exports = { graphql };
 //     });
 // });
 
-// exports.addOnCreateVariableInTodo = functions.database
-//   .ref("/users/{uid}/todos/{pushId}")
-//   .onCreate((snapshot, context) => {
-//     // Grab the current value of what was written to the Realtime Database.
-//     const original = snapshot.val();
+const addOnCreateVariableInTodo = database
+  .ref("/users/{uid}/todos/{pushId}")
+  .onCreate((snapshot, context) => {
+    // Grab the current value of what was written to the Realtime Database.
+    const original = snapshot.val();
 
-//     console.log("Adding created_at", context.params.pushId, original);
+    console.log("Adding created_at", context.params.pushId, original);
 
-//     // You must return a Promise when performing asynchronous tasks inside a Functions such as
-//     // writing to the Firebase Realtime Database.
-//     // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
-//     return snapshot.ref.child("created_at").set(moment().format());
-//   });
+    // You must return a Promise when performing asynchronous tasks inside a Functions such as
+    // writing to the Firebase Realtime Database.
+    // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
+    return snapshot.ref.child("created_at").set(moment().format())
+  });
 
-// exports.addOnUpdateVariableInTodo = functions.database
-//   .ref("/users/{uid}/todos/{pushId}")
-//   .onUpdate((snapshot, context) => {
-//     // Grab the current value of what was written to the Realtime Database.
-//     const original = snapshot.after.val();
+const addOnUpdateVariableInTodo = database
+  .ref("/users/{uid}/todos/{pushId}")
+  .onUpdate((snapshot, context) => {
+    // Grab the current value of what was written to the Realtime Database.
+    const original = snapshot.after.val();
 
-//     console.log("Adding updated_at", context.params.pushId, original);
+    console.log("Adding updated_at", context.params.pushId, original);
 
-//     // You must return a Promise when performing asynchronous tasks inside a Functions such as
-//     // writing to the Firebase Realtime Database.
-//     // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
-//     return snapshot.after.ref.child("updated_at").set(moment().format());
-//   });
+    // You must return a Promise when performing asynchronous tasks inside a Functions such as
+    // writing to the Firebase Realtime Database.
+    // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
+    return snapshot.after.ref.child("updated_at").set(moment().format());
+  });
 
 // // Listens for new messages added to /messages/:pushId/original and creates an
 // // uppercase version of the message to /messages/:pushId/uppercase
@@ -298,3 +283,5 @@ module.exports = { graphql };
 //     .then(decoded => res.status(200).send(decoded))
 //     .catch(err => res.status(401).send(err));
 // });
+
+module.exports = { graphql, addOnCreateVariableInTodo, addOnUpdateVariableInTodo };
