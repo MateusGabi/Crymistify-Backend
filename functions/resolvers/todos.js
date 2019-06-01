@@ -38,11 +38,9 @@ function mapDBtoGraphQL(child) {
   };
 }
 
-function getTodos(obj, args, context, info) {
-  const { user, db } = context;
-
+function getTodosFromUser(db, userId) {
   return db
-    .ref(`/users/${user.user_id}/todos`)
+    .ref(`/users/${userId}/todos`)
     .orderByChild("expire_in")
     .once("value")
     .then(dataSnapshot => {
@@ -65,6 +63,12 @@ function getTodos(obj, args, context, info) {
       console.log("Tasks", tasks);
       return tasks;
     });
+}
+
+function getTodos(obj, args, context, info) {
+  const { user, db } = context;
+
+  return getTodosFromUser(db, user.user_id);
 }
 
 function addTodo(obj, args, context, info) {
@@ -106,4 +110,4 @@ function addTodo(obj, args, context, info) {
     });
 }
 
-module.exports = { getTodos, addTodo };
+module.exports = { getTodos, addTodo, getTodosFromUser };

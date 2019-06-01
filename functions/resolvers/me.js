@@ -1,5 +1,7 @@
+const { getTodosFromUser } = require("./todos");
+
 function graphQLResolver(obj, args, context, info) {
-  const { user } = context;
+  const { user, db } = context;
 
   return {
     ID: user.user_id,
@@ -8,8 +10,7 @@ function graphQLResolver(obj, args, context, info) {
     name: user.name,
     email: user.email,
     picture: user.picture,
-    password: "",
-    todos: []
+    todos: getTodosFromUser(db, user.user_id)
   };
 }
 

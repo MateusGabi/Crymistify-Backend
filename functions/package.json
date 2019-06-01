@@ -14,9 +14,11 @@
     "body-parser": "^1.19.0",
     "express": "^4.17.0",
     "express-graphql": "^0.8.0",
+    "express-status-monitor": "^1.2.5",
     "firebase-admin": "^7.3.0",
     "firebase-functions": "^2.3.1",
     "graphql": "^14.3.1",
+    "graphql-import": "^0.7.1",
     "graphql-server-express": "^1.4.0",
     "graphql-tools": "^4.0.4",
     "moment": "^2.24.0"

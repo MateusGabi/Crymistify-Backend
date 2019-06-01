@@ -10,7 +10,11 @@ const getMe = require("./resolvers/me");
 function gqlServer() {
   const app = express();
 
+  /* init db */
   admin.initializeApp();
+
+  /* attach monitor */
+  app.use(require("express-status-monitor")());
 
   const apolloServer = new ApolloServer({
     typeDefs: schema,
