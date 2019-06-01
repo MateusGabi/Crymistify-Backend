@@ -52,10 +52,6 @@ type BoardColumn implements ModelObject {
   order: Float
 }
 
-input TagInput {
-  title: String!
-}
-
 type Query {
   todos: [Todo]
   me: User
@@ -66,6 +62,6 @@ type Mutation {
     title: String!
     description: String
     expireIn: String
-    tags: [TagInput]
+    tags: [String!]
   ): Todo!
 }

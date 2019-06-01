@@ -1,5 +1,9 @@
 const moment = require("moment");
 
+function slugify(word = "") {
+  return word.toLowerCase().replace(" ", "_")
+}
+
 function snapshotToArray(snapshot) {
   var returnArr = [];
 
@@ -38,6 +42,23 @@ function mapDBtoGraphQL(child) {
   };
 }
 
+function genRandomId() {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+function addTags(tags, databaseRef) {
+  tags.map(tag => ({
+    __id: slug,
+    title: tag,
+    slug: slugify(tag),
+    // TODO: move to functions
+    created_at: moment().format(),
+    updated_at: moment().format(),
+  })).forEach(tag => {
+    databaseRef.child(tag.slug).set(tag)
+  })
+}
+
 function getTodosFromUser(db, userId) {
   return db
     .ref(`/users/${userId}/todos`)
@@ -55,7 +76,7 @@ function getTodosFromUser(db, userId) {
             description: task.description,
             done: task.done,
             late: moment(task.expire_in).isBefore(moment()),
-            tags: []
+            tags: task.tags
           };
         })
         .sort(sortByExpireInASC);
@@ -80,13 +101,20 @@ function addTodo(obj, args, context, info) {
     expireIn = null,
     tags = null
   } = args;
+  
+  const slugifiedTags = tags ? tags.map(t => slugify(t)) : []
 
   const newTodo = {
     title,
     description,
+    tags: slugifiedTags,
     expire_in: expireIn,
-    done: false
+    done: false,
+    __via: "GraphQL"
   };
+
+  /* parallel */
+  addTags(tags || [], db.ref(`/users/${user.user_id}/tags`))
 
   console.log("Todo", newTodo);
   const todoRef = db.ref(`/users/${user.user_id}/todos`);
@@ -100,6 +128,13 @@ function addTodo(obj, args, context, info) {
         description,
         expireIn,
         done: false,
+        tags: tags.map(t => ({
+          ID: genRandomId(),
+          title: t,
+          slug: slugify(t),
+          createdAt: moment().format(),
+          updatedAt: moment().format()
+        })),
         createdAt: moment().format(),
         updatedAt: moment().format()
       };
