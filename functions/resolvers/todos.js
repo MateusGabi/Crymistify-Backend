@@ -1,21 +1,12 @@
 const moment = require("moment");
 
-function slugify(word = "") {
-  return word.toLowerCase().replace(" ", "_")
-}
-
-function snapshotToArray(snapshot) {
-  var returnArr = [];
-
-  snapshot.forEach(function(childSnapshot) {
-    var item = childSnapshot.val();
-    item.key = childSnapshot.key;
-
-    returnArr.push(item);
-  });
-
-  return returnArr;
-}
+const {
+getRandomColor,
+ genRandomId,
+ slugify,
+ snapshotToArray,
+ createDatabaseReference,
+} = require('./utils')
 
 function sortByExpireInASC(a, b) {
   if (!a.expireIn && !b.expireIn) return 0;
@@ -42,16 +33,6 @@ function mapDBtoGraphQL(child) {
   };
 }
 
-function genRandomId() {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
-
-function createDatabaseReference(pathways, db) {
-  const path = '/' + pathways.join('/')
-
-  return db.ref(path)
-}
-
 function increasePoints(x, userId, payload, db) {
   const ref = createDatabaseReference([
     'users', userId, 'points'
@@ -75,11 +56,45 @@ function addTags(tags, databaseRef) {
     __id: slugify(tag),
     title: tag,
     slug: slugify(tag),
+    color: getRandomColor(),
     // TODO: move to functions
     created_at: moment().format(),
     updated_at: moment().format(),
   })).forEach(tag => {
     databaseRef.child(tag.slug).set(tag)
+  })
+}
+
+function getTags(tags = [], userId, db) {
+  console.log('Tags', tags)
+
+  if (!(tags instanceof Array))
+  return []
+  else if (tags.length === 0)
+  return []
+
+  const tagsReference = createDatabaseReference([
+    'users', userId, 'tags'
+  ], db)
+
+  return tagsReference.once('value').then(dataSnapshot => {
+    let tasks = snapshotToArray(dataSnapshot)
+      .map(task => {
+        return {
+          ID: task.__id,
+          createdAt: task.created_at,
+          updatedAt: task.updated_at,
+          slug: task.slug,
+          title: task.title,
+          color: task.color,
+        };
+      }).filter(tag => tags instanceof Array && tags.includes(tag.slug))
+
+    console.log("Tasks", tasks);
+    return tasks;
+  }).catch(err => {
+    console.error(err)
+    return []
   })
 }
 
@@ -89,31 +104,44 @@ function getTodosFromUser(db, userId) {
     .orderByChild("expire_in")
     .once("value")
     .then(dataSnapshot => {
-      let tasks = snapshotToArray(dataSnapshot)
-        .map(task => {
-          return {
-            ID: task.key,
-            createdAt: task.created_at,
-            updatedAt: task.updated_at,
-            expireIn: task.expire_in,
-            title: task.title,
-            description: task.description,
-            done: task.done,
-            late: moment(task.expire_in).isBefore(moment()),
-            tags: task.tags
-          };
-        })
-        .sort(sortByExpireInASC);
+      /* send array of todos */
+      return Promise.resolve(snapshotToArray(dataSnapshot))
+    })
+    .then(tasks => {
+      /* dispatch  */
+      const todoTagsPromise = Promise.all(tasks.map(({ tags }) => getTags(tags, userId, db)))
+      const todosFormatted = Promise.all(tasks.map(task => {
+        return {
+          ID: task.key,
+          createdAt: task.created_at,
+          updatedAt: task.updated_at,
+          expireIn: task.expire_in,
+          title: task.title,
+          description: task.description,
+          done: task.done,
+          late: moment(task.expire_in).isBefore(moment()),
+        }
+      }).sort(sortByExpireInASC))
 
-      console.log("Tasks", tasks);
-      return tasks;
-    });
+      return Promise.all([
+        todoTagsPromise,
+        todosFormatted
+      ])
+    }).then(responses => {
+      const [tags, todos] = responses
+
+      return todos.map((todo, index) => {
+        return Object.assign(todo, {
+          tags: tags[index]
+        })
+      })
+    })
 }
 
 function getTodos(obj, args, context, info) {
   const { user, db } = context;
 
-  return getTodosFromUser(db, user.user_id);
+  return getTodosFromUser(db, user.user_id).then(todos => todos.filter(t => t.done === false));
 }
 
 function addTodo(obj, args, context, info) {

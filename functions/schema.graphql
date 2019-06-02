@@ -33,6 +33,7 @@ type Tag implements ModelObject {
   updatedAt: String!
   title: String!
   slug: String!
+  color: String!
 }
 
 type Board implements ModelObject {
