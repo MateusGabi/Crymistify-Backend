@@ -21,7 +21,7 @@
     "graphql-import": "^0.7.1",
     "graphql-server-express": "^1.4.0",
     "graphql-tools": "^4.0.4",
-    "moment": "^2.24.0"
+    "moment": "^2.29.2"
   },
   "devDependencies": {
     "eslint": "^4.12.0",
